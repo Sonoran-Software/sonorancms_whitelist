@@ -59,14 +59,14 @@ async function initialize() {
           await instance.cms.verifyWhitelist(apiId).then((whitelist) => {
             if (whitelist.success) {
               deferrals.done();
-              utils.infoLog(`Successfully allowed ${name} () through whitelist, username returned: ${whitelist.reason}`);
+              utils.infoLog(`Successfully allowed ${name} (${apiId}) through whitelist, username returned: ${whitelist.reason}`);
             } else {
               deferrals.done(`Failed whitelist check: ${whitelist.reason}`);
-              utils.infoLog(`Denied ${name} () through whitelist, reason returned: ${whitelist.reason}`);
+              utils.infoLog(`Denied ${name} (${apiId}) through whitelist, reason returned: ${whitelist.reason}`);
             }
           }).catch((err) => {
             deferrals.done(`Error occured while checking whitelist... ${err}`);
-            utils.errorLog(`An error occured while checking whitelist for ${name} ()... ${err}`, err);
+            utils.errorLog(`An error occured while checking whitelist for ${name} (${apiId})... ${err}`, err);
           });
         });
       });

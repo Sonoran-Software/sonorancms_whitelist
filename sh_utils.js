@@ -32,7 +32,8 @@ module.exports.checkVersion = async (_gitRepo, _currentVersion) => {
     const gitRepo = `https://raw.githubusercontent.com/${gitRepoSplit[3]}/${gitRepoSplit[4]}`;
     const theFetch = await fetch(`${gitRepo}/master/fxmanifest.lua`);
     if (theFetch.ok) {
-      const data = await theFetch.text();
+      let data = await theFetch.text();
+      data = data.trim().split('\n');
       data.forEach((line) => {
         if (line.startsWith('version')) {
           const versionLineSplit = line.split('\'');
