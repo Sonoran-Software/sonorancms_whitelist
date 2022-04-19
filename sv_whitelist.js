@@ -61,7 +61,7 @@ async function initialize() {
               deferrals.done();
               utils.infoLog(`Successfully allowed ${name} (${apiId}) through whitelist, username returned: ${whitelist.reason}`);
             } else {
-              deferrals.done(`Failed whitelist check: ${whitelist.reason}`);
+              deferrals.done(`Failed whitelist check: ${whitelist.reason} \n\nAPI ID used to check: ${apiId}`);
               utils.infoLog(`Denied ${name} (${apiId}) through whitelist, reason returned: ${whitelist.reason}`);
             }
           }).catch((err) => {
