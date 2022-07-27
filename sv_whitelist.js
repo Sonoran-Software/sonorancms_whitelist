@@ -136,7 +136,7 @@ async function initialize() {
 					}
 				);
 
-				setInterval(updateBackup(config), 300000);
+				setInterval(updateBackup(config), 1800000);
 			});
 
 			instance.on("CMS_SETUP_UNSUCCESSFUL", (err) => {
