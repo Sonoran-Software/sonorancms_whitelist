@@ -153,11 +153,12 @@ async function initialize() {
 }
 
 function updateBackup(config) {
-	var xhr = new XMLHttpRequest();
-	xhr.open("POST", "https://api.sonorancms.com/servers/full_whitelist", true);
-	xhr.setRequestHeader("Content-Type", "application/json");
-	xhr.send(
-		JSON.stringify({
+	fetch("https://api.sonorancms.com/servers/full_whitelist", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({
 			id: config.communityId,
 			key: config.apiKey,
 			type: "GET_FULL_WHITELIST",
@@ -167,23 +168,23 @@ function updateBackup(config) {
 				}
 			]
 		})
-	);
-	xhr.onreadystatechange = () => {
-		if (xhr.readyState == XMLHttpRequest.DONE && xhr.status != 0) {
-			let IDarray = [];
-			const resp = JSON.parse(xhr.responseText);
-			for (x in resp) {
-				let v = resp[x];
-				IDarray.concat(v.apiIds);
+	}).then((resp) => {
+		resp.json().then((res) => {
+			if (resp.status == 201) {
+				let IDarray = [];
+				for (x in res) {
+					let v = res[x];
+					IDarray.concat(v.apiIds);
+				}
+				backup = IDarray;
+				SaveResourceFile(
+					GetCurrentResourceName(),
+					"backup.json",
+					JSON.stringify(backup)
+				);
 			}
-			backup = IDarray;
-			SaveResourceFile(
-				GetCurrentResourceName(),
-				"backup.json",
-				JSON.stringify(backup)
-			);
-		}
-	};
+		});
+	});
 }
 
 function getAppropriateIdentifier(source, type) {
