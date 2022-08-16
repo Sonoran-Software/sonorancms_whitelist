@@ -1,4 +1,5 @@
 const utils = require("./sh_utils");
+const fetch = require('node-fetch');
 
 async function initialize() {
 	let config = false;
@@ -109,7 +110,7 @@ async function initialize() {
 								if (whitelist.success) {
 									deferrals.done();
 									utils.infoLog(
-										`Successfully allowed ${name} (${apiId}) through whitelist, username returned: ${whitelist.reason}`
+										`Successfully allowed ${name} (${apiId}) through whitelist, username returned: ${whitelist.reason} `
 									);
 								} else {
 									deferrals.done(
@@ -136,7 +137,7 @@ async function initialize() {
 					}
 				);
 
-				setInterval(updateBackup(config), 1800000);
+				setInterval(() => {updateBackup(config)}, 1800000);
 			});
 
 			instance.on("CMS_SETUP_UNSUCCESSFUL", (err) => {
