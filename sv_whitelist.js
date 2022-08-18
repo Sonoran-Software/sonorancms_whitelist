@@ -151,7 +151,6 @@ function updateBackup(instance) {
         idArray.push(...fW.apiIds);
       });
       backup = idArray;
-      console.log("About to commit to the backup...", JSON.stringify(backup));
       SaveResourceFile(
         GetCurrentResourceName(),
         "backup.json",
