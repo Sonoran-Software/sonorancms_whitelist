@@ -116,7 +116,7 @@ async function initialize() {
 									.then((whitelist) => {
 										if (whitelist.success) {
 											utils.infoLog(
-												`After role update, ${data.data.accName} (${accountID}) is still whitelisted, username returned: ${JSON.stringify(whitelist.reason.msg)} `
+												`After role update, ${data.data.accName} (${accountID}) is still whitelisted, username returned: ${JSON.stringify(whitelist.reason)} `
 											);
 										} else {
 											DropPlayer(activePlayers[accountID], 'After SonoranCMS role update, you were no longer whitelisted: ' + JSON.stringify(whitelist.reason.msg))
@@ -155,7 +155,7 @@ async function initialize() {
 								if (whitelist.success) {
 									deferrals.done();
 									utils.infoLog(
-										`Successfully allowed ${name} (${apiId}) through whitelist, username returned: ${JSON.stringify(whitelist.reason.msg)} `
+										`Successfully allowed ${name} (${apiId}) through whitelist, username returned: ${JSON.stringify(whitelist.reason)} `
 									);
 									await instance.cms.rest.request('GET_COM_ACCOUNT', apiId, whitelist.reason, undefined).then((data) => {
 										activePlayers[data[0].accId] = src
@@ -202,7 +202,6 @@ async function initialize() {
 }
 
 function updateBackup(instance) {
-	console.log(instance)
 	instance.cms.getFullWhitelist().then((fullWhitelist) => {
 		if (fullWhitelist.success) {
 			const idArray = [];
