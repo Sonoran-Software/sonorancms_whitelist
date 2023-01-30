@@ -1,7 +1,16 @@
 const utils = require("./sh_utils");
 const fetch = require('node-fetch');
-
+const { unwatchFile } = require("fs");
+let APIKey = '';
+let activePlayers = {};
 async function initialize() {
+	if (GetResourceState('sonorancms') != "started") {
+		utils.errorLog('SonoranCMS Core Is Not Started!')
+	} else {
+		APIKey = GetConvar("SONORAN_CMS_API_KEY")
+		TriggerEvent("sonorancms::RegisterPushEvent", "ACCOUNT_UPDATED", "sonoran_whitelist::rankupdate")
+	}
+
 	let config = false;
 	utils.infoLog("Checking resource version...");
 	await utils.checkVersion(
@@ -39,7 +48,7 @@ async function initialize() {
 					};
 				}
 			} else {
-				utils.errorLog(err);
+				utils.errorLog(JSON.stringify(err));
 			}
 		}
 	}
@@ -73,8 +82,7 @@ async function initialize() {
 					return utils.errorLog(
 						`Subscription version too low to use Sonoran Whitelist effectively... Current Sub Version: ${utils.subIntToName(
 							instance.cms.version
-						)} (${
-							instance.cms.version
+						)} (${instance.cms.version
 						}) | Needed Sub Version: ${utils.subIntToName(2)} (2)`
 					);
 				utils.infoLog(
@@ -85,6 +93,41 @@ async function initialize() {
 
 				updateBackup(config);
 
+				RegisterNetEvent('sonoran_whitelist::rankupdate')
+				on(
+					'sonoran_whitelist::rankupdate',
+					async (data) => {
+						const accountID = data.data.accId;
+						if (activePlayers[accountID]) {
+							let apiId;
+							apiId = getAppropriateIdentifier(
+								activePlayers[accountID],
+								config.apiIdType.toLowerCase()
+							);
+							if (!apiId)
+								return utils.errorLog(
+									`Could not find the correct API ID to cross check with the whitelist... Requesting type: ${config.apiIdType.toUpperCase()}`
+								);
+							if (data.key === APIKey) {
+								await instance.cms
+									.verifyWhitelist(apiId)
+									.then((whitelist) => {
+										if (whitelist.success) {
+											utils.infoLog(
+												`After role update, ${data.data.accName} (${accountID}) is still whitelisted, username returned: ${JSON.stringify(whitelist.reason.msg)} `
+											);
+										} else {
+											DropPlayer(activePlayers[accountID], 'After SonoranCMS role update, you were no longer whitelisted: ' + JSON.stringify(whitelist.reason.msg))
+											utils.infoLog(
+												`After SonoranCMS role update ${data.data.accName} (${accountID}) was no longer whitelisted, reason returned: ${JSON.stringify(whitelist.reason.msg)}`
+											);
+											activePlayers[accountID] = null
+										}
+									})
+							}
+						}
+					}
+				);
 				on(
 					"playerConnecting",
 					async (name, setNickReason, deferrals) => {
@@ -106,18 +149,21 @@ async function initialize() {
 						updateBackup(config);
 						await instance.cms
 							.verifyWhitelist(apiId)
-							.then((whitelist) => {
+							.then(async (whitelist) => {
 								if (whitelist.success) {
 									deferrals.done();
 									utils.infoLog(
-										`Successfully allowed ${name} (${apiId}) through whitelist, username returned: ${whitelist.reason} `
+										`Successfully allowed ${name} (${apiId}) through whitelist, username returned: ${JSON.stringify(whitelist.reason.msg)} `
 									);
+									await instance.cms.rest.request('GET_COM_ACCOUNT', apiId, whitelist.reason, undefined).then((data) => {
+										activePlayers[data[0].accId] = src
+									})
 								} else {
 									deferrals.done(
-										`Failed whitelist check: ${whitelist.reason} \n\nAPI ID used to check: ${apiId}`
+										`Failed whitelist check: ${JSON.stringify(whitelist.reason.msg)} \n\nAPI ID used to check: ${apiId}`
 									);
 									utils.infoLog(
-										`Denied ${name} (${apiId}) through whitelist, reason returned: ${whitelist.reason}`
+										`Denied ${name} (${apiId}) through whitelist, reason returned: ${JSON.stringify(whitelist.reason.msg)}`
 									);
 								}
 							})
@@ -137,7 +183,7 @@ async function initialize() {
 					}
 				);
 
-				setInterval(() => {updateBackup(config)}, 1800000);
+				setInterval(() => { updateBackup(config) }, 1800000);
 			});
 
 			instance.on("CMS_SETUP_UNSUCCESSFUL", (err) => {
@@ -188,8 +234,8 @@ function updateBackup(config) {
 	});
 }
 
-function getAppropriateIdentifier(source, type) {
-	const identifiers = getPlayerIdentifiers(source);
+function getAppropriateIdentifier(sourcePlayer, type) {
+	const identifiers = getPlayerIdentifiers(sourcePlayer);
 	let properIdentifiers = {
 		discord: "",
 		steam: "",
