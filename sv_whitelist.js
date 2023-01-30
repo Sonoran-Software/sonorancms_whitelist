@@ -93,6 +93,8 @@ async function initialize() {
 
 				updateBackup(instance);
 
+
+
 				RegisterNetEvent('sonoran_whitelist::rankupdate')
 				on(
 					'sonoran_whitelist::rankupdate',
@@ -146,7 +148,7 @@ async function initialize() {
 								`Could not find the correct API ID to cross check with the whitelist... Requesting type: ${config.apiIdType.toUpperCase()}`
 							);
 						deferrals.update("Checking whitelist...");
-						updateBackup(config);
+						updateBackup(instance);
 						await instance.cms
 							.verifyWhitelist(apiId)
 							.then(async (whitelist) => {
@@ -183,7 +185,7 @@ async function initialize() {
 					}
 				);
 
-				setInterval(() => { updateBackup(config) }, 1800000);
+				setInterval(() => { updateBackup(instance) }, 1800000);
 			});
 
 			instance.on("CMS_SETUP_UNSUCCESSFUL", (err) => {
@@ -200,6 +202,7 @@ async function initialize() {
 }
 
 function updateBackup(instance) {
+	console.log(instance)
 	instance.cms.getFullWhitelist().then((fullWhitelist) => {
 		if (fullWhitelist.success) {
 			const idArray = [];
