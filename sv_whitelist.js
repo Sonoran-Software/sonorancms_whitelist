@@ -53,29 +53,29 @@ async function initialize() {
 		}
 	}
 
-	if (config) {
-		if (
-			config.apiIdType.toLowerCase() !== "discord" &&
-			config.apiIdType.toLowerCase() !== "steam" &&
-			config.apiIdType.toLowerCase() !== "license"
-		) {
-			utils.errorLog(
-				'Invalid apiIdType given, must be "discord", "steam", or "license".'
-			);
-		} else {
-			const Sonoran = require("@sonoransoftware/sonoran.js");
-			utils.infoLog("Initializing Sonoran Whitelist...");
-			const instance = new Sonoran.Instance({
-				communityId: config.communityId,
-				apiKey: config.apiKey,
-				serverId: config.serverId,
-				product: Sonoran.productEnums.CMS,
-				cmsApiUrl: config.apiUrl
-			});
+  if (config) {
+    if (
+      config.apiIdType.toLowerCase() !== "discord" &&
+      config.apiIdType.toLowerCase() !== "steam" &&
+      config.apiIdType.toLowerCase() !== "license"
+    ) {
+      utils.errorLog(
+        'Invalid apiIdType given, must be "discord", "steam", or "license".'
+      );
+    } else {
+      const Sonoran = require("@sonoransoftware/sonoran.js");
+      utils.infoLog("Initializing Sonoran Whitelist...");
+      const instance = new Sonoran.Instance({
+        communityId: config.communityId,
+        apiKey: config.apiKey,
+        serverId: config.serverId,
+        product: Sonoran.productEnums.CMS,
+        cmsApiUrl: config.apiUrl,
+      });
 
-			let backup = JSON.parse(
-				LoadResourceFile(GetCurrentResourceName(), "backup.json")
-			);
+      let backup = JSON.parse(
+        LoadResourceFile(GetCurrentResourceName(), "backup.json")
+      );
 
 			instance.on("CMS_SETUP_SUCCESSFUL", () => {
 				if (instance.cms.version < 2)
@@ -91,7 +91,7 @@ async function initialize() {
 					)} (${instance.cms.version})`
 				);
 
-				updateBackup(config);
+        updateBackup(instance);
 
 				RegisterNetEvent('sonoran_whitelist::rankupdate')
 				on(
@@ -186,52 +186,34 @@ async function initialize() {
 				setInterval(() => { updateBackup(config) }, 1800000);
 			});
 
-			instance.on("CMS_SETUP_UNSUCCESSFUL", (err) => {
-				utils.errorLog(
-					`Sonoran Whitelist Setup Unsuccessfully! Error provided: ${err}`
-				);
-			});
-		}
-	} else {
-		utils.errorLog(
-			"No config found... looked for config.json & server convars..."
-		);
-	}
+      instance.on("CMS_SETUP_UNSUCCESSFUL", (err) => {
+        utils.errorLog(
+          `Sonoran Whitelist Setup Unsuccessfully! Error provided: ${err}`
+        );
+      });
+    }
+  } else {
+    utils.errorLog(
+      "No config found... looked for config.json & server convars..."
+    );
+  }
 }
 
-function updateBackup(config) {
-	fetch("https://api.sonorancms.com/servers/full_whitelist", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json"
-		},
-		body: JSON.stringify({
-			id: config.communityId,
-			key: config.apiKey,
-			type: "GET_FULL_WHITELIST",
-			data: [
-				{
-					serverId: config.serverId
-				}
-			]
-		})
-	}).then((resp) => {
-		resp.json().then((res) => {
-			if (resp.status == 201) {
-				let IDarray = [];
-				for (x in res) {
-					let v = res[x];
-					IDarray.concat(v.apiIds);
-				}
-				backup = IDarray;
-				SaveResourceFile(
-					GetCurrentResourceName(),
-					"backup.json",
-					JSON.stringify(backup)
-				);
-			}
-		});
-	});
+function updateBackup(instance) {
+  instance.cms.getFullWhitelist().then((fullWhitelist) => {
+    if (fullWhitelist.success) {
+      const idArray = [];
+      fullWhitelist.data.forEach((fW) => {
+        idArray.push(...fW.apiIds);
+      });
+      backup = idArray;
+      SaveResourceFile(
+        GetCurrentResourceName(),
+        "backup.json",
+        JSON.stringify(backup)
+      );
+    }
+  });
 }
 
 function getAppropriateIdentifier(sourcePlayer, type) {
@@ -258,11 +240,11 @@ function getAppropriateIdentifier(sourcePlayer, type) {
 		}
 	});
 
-	if (properIdentifiers[type] === "") {
-		return null;
-	} else {
-		return properIdentifiers[type];
-	}
+  if (properIdentifiers[type] === "") {
+    return null;
+  } else {
+    return properIdentifiers[type];
+  }
 }
 
 initialize();
