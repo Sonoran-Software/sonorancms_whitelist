@@ -53,29 +53,29 @@ async function initialize() {
 		}
 	}
 
-  if (config) {
-    if (
-      config.apiIdType.toLowerCase() !== "discord" &&
-      config.apiIdType.toLowerCase() !== "steam" &&
-      config.apiIdType.toLowerCase() !== "license"
-    ) {
-      utils.errorLog(
-        'Invalid apiIdType given, must be "discord", "steam", or "license".'
-      );
-    } else {
-      const Sonoran = require("@sonoransoftware/sonoran.js");
-      utils.infoLog("Initializing Sonoran Whitelist...");
-      const instance = new Sonoran.Instance({
-        communityId: config.communityId,
-        apiKey: config.apiKey,
-        serverId: config.serverId,
-        product: Sonoran.productEnums.CMS,
-        cmsApiUrl: config.apiUrl,
-      });
+	if (config) {
+		if (
+			config.apiIdType.toLowerCase() !== "discord" &&
+			config.apiIdType.toLowerCase() !== "steam" &&
+			config.apiIdType.toLowerCase() !== "license"
+		) {
+			utils.errorLog(
+				'Invalid apiIdType given, must be "discord", "steam", or "license".'
+			);
+		} else {
+			const Sonoran = require("@sonoransoftware/sonoran.js");
+			utils.infoLog("Initializing Sonoran Whitelist...");
+			const instance = new Sonoran.Instance({
+				communityId: config.communityId,
+				apiKey: config.apiKey,
+				serverId: config.serverId,
+				product: Sonoran.productEnums.CMS,
+				cmsApiUrl: config.apiUrl,
+			});
 
-      let backup = JSON.parse(
-        LoadResourceFile(GetCurrentResourceName(), "backup.json")
-      );
+			let backup = JSON.parse(
+				LoadResourceFile(GetCurrentResourceName(), "backup.json")
+			);
 
 			instance.on("CMS_SETUP_SUCCESSFUL", () => {
 				if (instance.cms.version < 2)
@@ -91,7 +91,7 @@ async function initialize() {
 					)} (${instance.cms.version})`
 				);
 
-        updateBackup(instance);
+				updateBackup(instance);
 
 				RegisterNetEvent('sonoran_whitelist::rankupdate')
 				on(
@@ -186,34 +186,34 @@ async function initialize() {
 				setInterval(() => { updateBackup(config) }, 1800000);
 			});
 
-      instance.on("CMS_SETUP_UNSUCCESSFUL", (err) => {
-        utils.errorLog(
-          `Sonoran Whitelist Setup Unsuccessfully! Error provided: ${err}`
-        );
-      });
-    }
-  } else {
-    utils.errorLog(
-      "No config found... looked for config.json & server convars..."
-    );
-  }
+			instance.on("CMS_SETUP_UNSUCCESSFUL", (err) => {
+				utils.errorLog(
+					`Sonoran Whitelist Setup Unsuccessfully! Error provided: ${err}`
+				);
+			});
+		}
+	} else {
+		utils.errorLog(
+			"No config found... looked for config.json & server convars..."
+		);
+	}
 }
 
 function updateBackup(instance) {
-  instance.cms.getFullWhitelist().then((fullWhitelist) => {
-    if (fullWhitelist.success) {
-      const idArray = [];
-      fullWhitelist.data.forEach((fW) => {
-        idArray.push(...fW.apiIds);
-      });
-      backup = idArray;
-      SaveResourceFile(
-        GetCurrentResourceName(),
-        "backup.json",
-        JSON.stringify(backup)
-      );
-    }
-  });
+	instance.cms.getFullWhitelist().then((fullWhitelist) => {
+		if (fullWhitelist.success) {
+			const idArray = [];
+			fullWhitelist.data.forEach((fW) => {
+				idArray.push(...fW.apiIds);
+			});
+			backup = idArray;
+			SaveResourceFile(
+				GetCurrentResourceName(),
+				"backup.json",
+				JSON.stringify(backup)
+			);
+		}
+	});
 }
 
 function getAppropriateIdentifier(sourcePlayer, type) {
@@ -240,11 +240,11 @@ function getAppropriateIdentifier(sourcePlayer, type) {
 		}
 	});
 
-  if (properIdentifiers[type] === "") {
-    return null;
-  } else {
-    return properIdentifiers[type];
-  }
+	if (properIdentifiers[type] === "") {
+		return null;
+	} else {
+		return properIdentifiers[type];
+	}
 }
 
 initialize();
