@@ -162,10 +162,10 @@ async function initialize() {
 									})
 								} else {
 									deferrals.done(
-										`Failed whitelist check: ${JSON.stringify(whitelist.reason.msg)} \n\nAPI ID used to check: ${apiId}`
+										`Failed whitelist check: ${JSON.stringify(whitelist.reason.message)} \n\nAPI ID used to check: ${apiId}`
 									);
 									utils.infoLog(
-										`Denied ${name} (${apiId}) through whitelist, reason returned: ${JSON.stringify(whitelist.reason.msg)}`
+										`Denied ${name} (${apiId}) through whitelist, reason returned: ${JSON.stringify(whitelist.reason.message)}`
 									);
 								}
 							})
