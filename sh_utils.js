@@ -1,9 +1,20 @@
 const fetch = require('node-fetch');
 
+/**
+ *
+ * @param {string} message
+ * @param  {errStack} args
+ * @returns
+ */
 module.exports.errorLog = (message, ...args) => {
-  return console.log(`[ERROR - Sonoran Whitelist - ${new Date().toLocaleString()}] ${message}`, args);
+  return console.log(`^1[ERROR - Sonoran Whitelist - ${new Date().toLocaleString()}] ${message}`, args + '^0');
 }
 
+/**
+ *
+ * @param {string} message
+ * @returns
+ */
 module.exports.infoLog = (message) => {
   return console.log(`[INFO - Sonoran Whitelist - ${new Date().toLocaleString()}] ${message}`);
 }
@@ -22,6 +33,22 @@ module.exports.subIntToName = (subInt) => {
       return 'PRO';
     case 5:
       return 'SONORANONE';
+  }
+}
+
+module.exports.apiMsgToEnglish = (apiMsg) => {
+  console.log(apiMsg)
+  switch (apiMsg) {
+    case "UNKNOWN_ACC_API_ID":
+      return "unable to find a valid account with the provided API ID and account ID";
+    case "INVALID_SERVER_ID":
+      return "an invalid server ID was provided, please check your config and try again";
+    case "SERVER_CONFIG_ERROR":
+      return "an unexpected error occured while trying to retrieve the server's info";
+    case "BLOCKED FOR WHITELIST":
+      return "this user has a Sonoran CMS role that is preventing them from joining the server";
+    case "NOT ALLOWED ON WHITELIST":
+      return "this user does not have a Sonoran CMS with whitelist permissions";
   }
 }
 
