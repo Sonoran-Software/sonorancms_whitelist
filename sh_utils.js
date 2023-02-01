@@ -36,6 +36,22 @@ module.exports.subIntToName = (subInt) => {
   }
 }
 
+module.exports.apiMsgToEnglish = (apiMsg) => {
+  console.log(apiMsg)
+  switch (apiMsg) {
+    case "UNKNOWN_ACC_API_ID":
+      return "unable to find a valid account with the provided API ID and account ID";
+    case "INVALID_SERVER_ID":
+      return "an invalid server ID was provided, please check your config and try again";
+    case "SERVER_CONFIG_ERROR":
+      return "an unexpected error occured while trying to retrieve the server's info";
+    case "BLOCKED FOR WHITELIST":
+      return "this user has a Sonoran CMS role that is preventing them from joining the server";
+    case "NOT ALLOWED ON WHITELIST":
+      return "this user does not have a Sonoran CMS with whitelist permissions";
+  }
+}
+
 module.exports.checkVersion = async (_gitRepo, _currentVersion) => {
   return new Promise(async (resolve) => {
     const currentVersion = Number.parseInt(_currentVersion.split('.').join(''));

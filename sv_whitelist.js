@@ -119,9 +119,9 @@ async function initialize() {
 												`After role update, ${data.data.accName} (${accountID}) is still whitelisted, username returned: ${JSON.stringify(whitelist.reason)} `
 											);
 										} else {
-											DropPlayer(activePlayers[accountID], 'After SonoranCMS role update, you were no longer whitelisted: ' + JSON.stringify(whitelist.reason.msg))
+											DropPlayer(activePlayers[accountID], 'After SonoranCMS role update, you were no longer whitelisted: ' + utils.apiMsgToEnglish(whitelist.reason.message))
 											utils.infoLog(
-												`After SonoranCMS role update ${data.data.accName} (${accountID}) was no longer whitelisted, reason returned: ${JSON.stringify(whitelist.reason.msg)}`
+												`After SonoranCMS role update ${data.data.accName} (${accountID}) was no longer whitelisted, reason returned: ${utils.apiMsgToEnglish(whitelist.reason.message)}`
 											);
 											activePlayers[accountID] = null
 										}
@@ -162,10 +162,10 @@ async function initialize() {
 									})
 								} else {
 									deferrals.done(
-										`Failed whitelist check: ${JSON.stringify(whitelist.reason.message)} \n\nAPI ID used to check: ${apiId}`
+										`Failed whitelist check: ${utils.apiMsgToEnglish(whitelist.reason.message)} \n\nAPI ID used to check: ${apiId}`
 									);
 									utils.infoLog(
-										`Denied ${name} (${apiId}) through whitelist, reason returned: ${JSON.stringify(whitelist.reason.message)}`
+										`Denied ${name} (${apiId}) through whitelist, reason returned: ${utils.apiMsgToEnglish(whitelist.reason.message)}`
 									);
 								}
 							})
