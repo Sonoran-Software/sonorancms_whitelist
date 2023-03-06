@@ -13,10 +13,7 @@ async function initialize() {
 
 	let config = false;
 	utils.infoLog("Checking resource version...");
-	await utils.checkVersion(
-		GetResourceMetadata(GetCurrentResourceName(), "git_repo"),
-		GetResourceMetadata(GetCurrentResourceName(), "version")
-	);
+	TriggerEvent('SonoranCMS::Plugins::Loaded', GetCurrentResourceName())
 	try {
 		config = require("./config.json");
 	} catch (err) {
