@@ -1,60 +1,42 @@
 const utils = require("./sh_utils");
 const fetch = require('node-fetch');
 const { unwatchFile } = require("fs");
-let APIKey = '';
 let activePlayers = {};
+let apiKey, communityId, apiUrl, serverId, apiIdType
+
+RegisterNetEvent('SonoranCMS::Plugins::GiveInfo')
+on('SonoranCMS::Plugins::GiveInfo', async (pluginName, payload) => {
+	if (pluginName !== GetCurrentResourceName()) return;
+	apiKey = payload.apiKey
+	communityId = payload.communityId
+	apiUrl = payload.apiUrl
+	serverId = payload.serverId
+	apiIdType = payload.apiIdType
+})
+
+function sleep(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+on('onServerResourceStart', async (resourceName) => {
+	if (resourceName === 'sonorancms') {
+		utils.infoLog('sonorancms core has been (re)started! reinitializing addon!')
+		initialize()
+	}
+})
+
 async function initialize() {
 	if (GetResourceState('sonorancms') != "started") {
-		utils.errorLog('SonoranCMS Core Is Not Started!')
+		utils.errorLog('SonoranCMS Core Is Not Started! Not loading addon...')
 	} else {
-		APIKey = GetConvar("SONORAN_CMS_API_KEY")
 		TriggerEvent("sonorancms::RegisterPushEvent", "ACCOUNT_UPDATED", "sonoran_whitelist::rankupdate")
-	}
-
-	let config = false;
-	utils.infoLog("Checking resource version...");
-	TriggerEvent('SonoranCMS::Plugins::Loaded', GetCurrentResourceName())
-	try {
-		config = require("./config.json");
-	} catch (err) {
-		if (err) {
-			const apiKey = GetConvar("SONORAN_CMS_API_KEY", "unknown");
-			const communityId = GetConvar(
-				"SONORAN_CMS_COMMUNITY_ID",
-				"unknown"
-			);
-			const serverId = GetConvar("SONORAN_CMS_SERVER_ID", 1);
-			const apiIdType = GetConvar("SONORAN_CMS_API_ID_TYPE", "unknown");
-			const cmsApiUrl = GetConvar(
-				"SONORAN_CMS_API_URL",
-				"https://api.sonorancms.com"
-			);
-
-			if (!config) {
-				if (
-					apiKey !== "unknown" &&
-					communityId !== "unknown" &&
-					apiIdType !== "unknown"
-				) {
-					config = {
-						apiKey,
-						communityId,
-						serverId,
-						apiIdType,
-						apiUrl: cmsApiUrl
-					};
-				}
-			} else {
-				utils.errorLog(JSON.stringify(err));
-			}
-		}
-	}
-
-	if (config) {
+		utils.infoLog("Checking resource version...");
+		TriggerEvent('SonoranCMS::Plugins::Loaded', GetCurrentResourceName())
+		await sleep(2000)
 		if (
-			config.apiIdType.toLowerCase() !== "discord" &&
-			config.apiIdType.toLowerCase() !== "steam" &&
-			config.apiIdType.toLowerCase() !== "license"
+			apiIdType !== "discord" &&
+			apiIdType !== "steam" &&
+			apiIdType !== "license"
 		) {
 			utils.errorLog(
 				'Invalid apiIdType given, must be "discord", "steam", or "license".'
@@ -63,17 +45,15 @@ async function initialize() {
 			const Sonoran = require("@sonoransoftware/sonoran.js");
 			utils.infoLog("Initializing Sonoran Whitelist...");
 			const instance = new Sonoran.Instance({
-				communityId: config.communityId,
-				apiKey: config.apiKey,
-				serverId: config.serverId,
+				communityId: communityId,
+				apiKey: apiKey,
+				serverId: serverId,
 				product: Sonoran.productEnums.CMS,
-				cmsApiUrl: config.apiUrl,
+				cmsApiUrl: apiUrl,
 			});
-
 			let backup = JSON.parse(
 				LoadResourceFile(GetCurrentResourceName(), "backup.json")
 			);
-
 			instance.on("CMS_SETUP_SUCCESSFUL", () => {
 				if (instance.cms.version < 2)
 					return utils.errorLog(
@@ -87,11 +67,7 @@ async function initialize() {
 						instance.cms.version
 					)} (${instance.cms.version})`
 				);
-
 				updateBackup(instance);
-
-
-
 				RegisterNetEvent('sonoran_whitelist::rankupdate')
 				on(
 					'sonoran_whitelist::rankupdate',
@@ -101,13 +77,13 @@ async function initialize() {
 							let apiId;
 							apiId = getAppropriateIdentifier(
 								activePlayers[accountID],
-								config.apiIdType.toLowerCase()
+								apiIdType.toLowerCase()
 							);
 							if (!apiId)
 								return utils.errorLog(
-									`Could not find the correct API ID to cross check with the whitelist... Requesting type: ${config.apiIdType.toUpperCase()}`
+									`Could not find the correct API ID to cross check with the whitelist... Requesting type: ${apiIdType.toUpperCase()}`
 								);
-							if (data.key === APIKey) {
+							if (data.key === apiKey) {
 								await instance.cms
 									.verifyWhitelist(apiId)
 									.then((whitelist) => {
@@ -138,11 +114,11 @@ async function initialize() {
 						);
 						apiId = getAppropriateIdentifier(
 							src,
-							config.apiIdType.toLowerCase()
+							apiIdType.toLowerCase()
 						);
 						if (!apiId)
 							return utils.errorLog(
-								`Could not find the correct API ID to cross check with the whitelist... Requesting type: ${config.apiIdType.toUpperCase()}`
+								`Could not find the correct API ID to cross check with the whitelist... Requesting type: ${apiIdType.toUpperCase()}`
 							);
 						deferrals.update("Checking whitelist...");
 						updateBackup(instance);
@@ -181,20 +157,14 @@ async function initialize() {
 							});
 					}
 				);
-
 				setInterval(() => { updateBackup(instance) }, 1800000);
 			});
-
 			instance.on("CMS_SETUP_UNSUCCESSFUL", (err) => {
 				utils.errorLog(
 					`Sonoran Whitelist Setup Unsuccessfully! Error provided: ${err}`
 				);
 			});
 		}
-	} else {
-		utils.errorLog(
-			"No config found... looked for config.json & server convars..."
-		);
 	}
 }
 

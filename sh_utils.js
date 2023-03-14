@@ -7,7 +7,7 @@ const fetch = require('node-fetch');
  * @returns
  */
 module.exports.errorLog = (message, ...args) => {
-  return console.log(`^1[ERROR - Sonoran Whitelist - ${new Date().toLocaleString()}] ${message}`, args + '^0');
+  return console.log(`^1[ERROR - Sonoran CMS Whitelist - ${new Date().toLocaleString()}] ${message}`, args + '^0');
 }
 
 /**
@@ -16,7 +16,7 @@ module.exports.errorLog = (message, ...args) => {
  * @returns
  */
 module.exports.infoLog = (message) => {
-  return console.log(`[INFO - Sonoran Whitelist - ${new Date().toLocaleString()}] ${message}`);
+  return console.log(`[INFO - Sonoran CMS Whitelist - ${new Date().toLocaleString()}] ${message}`);
 }
 
 module.exports.subIntToName = (subInt) => {
