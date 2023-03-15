@@ -2,7 +2,7 @@ const utils = require("./sh_utils");
 const fetch = require('node-fetch');
 const { unwatchFile } = require("fs");
 let activePlayers = {};
-let apiKey, communityId, apiUrl, serverId, apiIdType
+let apiKey, communityId, apiUrl, serverId, apiIdType, debugMode
 
 RegisterNetEvent('SonoranCMS::Plugins::GiveInfo')
 on('SonoranCMS::Plugins::GiveInfo', async (pluginName, payload) => {
@@ -12,6 +12,8 @@ on('SonoranCMS::Plugins::GiveInfo', async (pluginName, payload) => {
 	apiUrl = payload.apiUrl
 	serverId = payload.serverId
 	apiIdType = payload.apiIdType
+	debugMode = payload.debugMode
+
 })
 
 function sleep(ms) {
@@ -50,7 +52,8 @@ async function initialize() {
 				serverId: serverId,
 				product: Sonoran.productEnums.CMS,
 				cmsApiUrl: apiUrl,
-			});
+				debug: debugMode
+		});
 			let backup = JSON.parse(
 				LoadResourceFile(GetCurrentResourceName(), "backup.json")
 			);
